@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import { chromiumFormatHTML } from '../dist/main.js';
+import { chromiumFormatHTML } from '../dist/main.esm.js';
 
 function formatHTML(text) {
   return chromiumFormatHTML(text, '  ');

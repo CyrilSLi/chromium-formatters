@@ -14,11 +14,6 @@ function chromiumFormatFactory(formatterClass) {
 }
 
 export const chromiumFormatCSS = chromiumFormatFactory(CSSFormatter);
-export const chromiumFormatJavaScript = chromiumFormatFactory(JavaScriptFormatter);
 export const chromiumFormatHTML = chromiumFormatFactory(HTMLFormatter);
+export const chromiumFormatJavaScript = chromiumFormatFactory(JavaScriptFormatter);
 export const chromiumFormatJSON = chromiumFormatFactory(JSONFormatter);
-
-globalThis.chromiumFormatJavaScript = chromiumFormatJavaScript;
-globalThis.chromiumFormatHTML = chromiumFormatHTML;
-globalThis.chromiumFormatCSS = chromiumFormatCSS;
-globalThis.chromiumFormatJSON = chromiumFormatJSON;

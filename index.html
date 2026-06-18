@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ace-builds@1/css/ace.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ace-builds@1/css/theme/chrome.css">
+    <script src="https://cdn.jsdelivr.net/npm/ace-builds@1/src-min-noconflict/ace.min.js"></script>
+    <script src="dist/main.min.cjs"></script>
+    <title>chromium-formatters Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        #header {
+            margin: 4px;
+        }
+        #header > * {
+            display: inline-block;
+            margin: 4px;
+        }
+        #language-select {
+            position: relative;
+            top: -4px;
+            padding: 4px 8px;
+            border: 1px solid black;
+        }
+        #language-select legend, #language-select label {
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        #language-select legend {
+            float: left;
+        }
+        h1 {
+            font-family: Arial, sans-serif;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        #app {
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+        #editors {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+        }
+        #editors > div {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div id="header">
+            <h1>chromium-formatters Demo</h1>
+            <fieldset id="language-select">
+                <legend>Language:</legend>
+                <input type="radio" id="css" name="language" value="CSS">
+                <label for="css">CSS</label>
+                <input type="radio" id="html" name="language" value="HTML">
+                <label for="html">HTML</label>
+                <input type="radio" id="javascript" name="language" value="JavaScript" checked>
+                <label for="javascript">JS</label>
+                <input type="radio" id="json" name="language" value="JSON">
+                <label for="json">JSON</label>
+            </fieldset>
+        </div>
+        <div id="editors">
+            <div id="original"></div>
+            <div id="formatted"></div>
+        </div>
+    </div>
+    <script>
+        const editorOptions = {
+            fontSize: "16px",
+            showPrintMargin: false,
+            showGutter: true,
+            highlightActiveLine: false,
+            theme: "ace/theme/chrome"
+        };
+
+        const original = ace.edit("original");
+        original.setOptions({
+            ...editorOptions,
+            placeholder: "Type or paste unformatted code here.",
+            wrap: true
+        });
+
+        const formatted = ace.edit("formatted");
+        formatted.setOptions({
+            ...editorOptions,
+            placeholder: "The formatted output or any error messages will appear here.",
+            readOnly: true,
+            wrap: false
+        });
+
+        function setLanguage() {
+            const language = document.querySelector('input[name="language"]:checked').value.toLowerCase();
+            original.session.setMode(`ace/mode/${language}`);
+            formatted.session.setMode(`ace/mode/${language}`);
+            formatCode();
+        }
+        document.getElementById("language-select").addEventListener("change", setLanguage);
+        setLanguage();
+
+        function formatCode() {
+            const language = document.querySelector('input[name="language"]:checked').value;
+            formatted.session.setValue("Formatting...");
+            try {
+                formatted.session.setValue(window[`chromiumFormat${language}`](original.getValue()));
+            } catch (error) {
+                formatted.session.setValue(`Error: ${error.stack || error.message || error}`);
+            }
+        }
+        original.on("change", formatCode);
+    </script>
+</body>
+</html>

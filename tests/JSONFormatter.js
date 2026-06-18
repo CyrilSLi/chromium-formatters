@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import { chromiumFormatJSON } from '../dist/main.js';
+import { chromiumFormatJSON } from '../dist/main.esm.js';
 
 function formatJSON(text) {
   return chromiumFormatJSON(text, '  ');

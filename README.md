@@ -4,7 +4,7 @@ The same formatters used by Chrom(ium) DevTools' "Pretty Print" feature, extract
 
 ## Installation
 
-This module has no external dependencies and can be used as an ESM module or a classic browser `<script>`.
+This library has no external dependencies and has both ESM and UMD builds.
 
 ## Usage
 
@@ -12,7 +12,7 @@ This module has no external dependencies and can be used as an ESM module or a c
 
 ```js
 // Only import the formatter functions you need, the supported languages are CSS, HTML, JavaScript, and JSON.
-import { chromiumFormatCSS, chromiumFormatHTML, chromiumFormatJavaScript, chromiumFormatJSON } from 'dist/main.js';
+import { chromiumFormatCSS, chromiumFormatHTML, chromiumFormatJavaScript, chromiumFormatJSON } from 'dist/main.esm.js';
 
 // Use the formatter function corresponding with the language of the input string (e.g. for JavaScript):
 const output = chromiumFormatters.chromiumFormatJavaScript(input);
@@ -23,18 +23,26 @@ const output = chromiumFormatters.chromiumFormatJavaScript(input, indentString="
 
 ```js
 // Or use a wildcard import to access all formatter functions:
-import * as chromiumFormatters from 'dist/main.js';
+import * as chromiumFormatters from 'dist/main.esm.js';
 
 const output = chromiumFormatters.chromiumFormatJavaScript(input);
 ```
 
-### Classic script (browser `<script>` tag without `type="module"`):
+### UMD (e.g. AMD, CJS, or browser `<script>` tag without `type="module"`):
 
 ```html
-<script src="dist/main.js"></script>
+<script src="dist/main.cjs"></script>
+<script>
+    // The four formatter functions are available as global objects:
+    const output = chromiumFormatJavaScript(input);
+</script>
 ```
 
-The 4 formatter functions are available as global objects, used the same way as the examples above.
+```js
+// CommonJS
+const { chromiumFormatCSS, chromiumFormatHTML, chromiumFormatJavaScript, chromiumFormatJSON } = require('../dist/main.cjs');
+const output = chromiumFormatJavaScript(input);
+```
 
 ## Build
 

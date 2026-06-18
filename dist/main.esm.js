@@ -1,11 +1,15 @@
 var __defProp = Object.defineProperty;
+var __returnValue = (v) => v;
+function __exportSetter(name, newValue) {
+  this[name] = __returnValue.bind(null, newValue);
+}
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, {
       get: all[name],
       enumerable: true,
       configurable: true,
-      set: (newValue) => all[name] = () => newValue
+      set: __exportSetter.bind(all, name)
     });
 };
 
@@ -11279,7 +11283,7 @@ class CSSFormatter {
   }
 }
 
-// src/main.js
+// src/main.esm.js
 function chromiumFormatFactory(formatterClass) {
   return (source, indentString = "    ") => {
     const builder = new FormattedContentBuilder(indentString);
@@ -11289,13 +11293,9 @@ function chromiumFormatFactory(formatterClass) {
   };
 }
 var chromiumFormatCSS = chromiumFormatFactory(CSSFormatter);
-var chromiumFormatJavaScript = chromiumFormatFactory(JavaScriptFormatter);
 var chromiumFormatHTML = chromiumFormatFactory(HTMLFormatter);
+var chromiumFormatJavaScript = chromiumFormatFactory(JavaScriptFormatter);
 var chromiumFormatJSON = chromiumFormatFactory(JSONFormatter);
-globalThis.chromiumFormatJavaScript = chromiumFormatJavaScript;
-globalThis.chromiumFormatHTML = chromiumFormatHTML;
-globalThis.chromiumFormatCSS = chromiumFormatCSS;
-globalThis.chromiumFormatJSON = chromiumFormatJSON;
 export {
   chromiumFormatJavaScript,
   chromiumFormatJSON,

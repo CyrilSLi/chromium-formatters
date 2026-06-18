@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import { chromiumFormatJavaScript } from '../dist/main.js';
+import { chromiumFormatJavaScript } from '../dist/main.esm.js';
 
 function formatJavaScript(text) {
   return chromiumFormatJavaScript(text, '  ');
