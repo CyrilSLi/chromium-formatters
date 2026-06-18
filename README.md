@@ -1,5 +1,7 @@
 # chromium-format-javascript
 
+The same formatters used by Chrom(ium) DevTools' "Pretty Print" feature, extracted into a standalone module for use outside of it. The supported languages are CSS, HTML, JavaScript, and JSON.
+
 ## Installation
 
 This module has no external dependencies and can be used as an ESM module or a classic browser `<script>`.
@@ -56,8 +58,8 @@ All files had their `import` paths modified to reference this project's flat `sr
 - [FormattedContentBuilder.ts](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/FormattedContentBuilder.ts)
 - [FormatterWorker.ts](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/FormatterWorker.ts)
   - The debug function `disableLoggingForTest` and its required import [root.ts](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/core/root/root.ts) were removed.
-  - codemirror.mjs: Codemirror version 5.61.0, as per [README.chromium](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/third_party/codemirror/README.chromium).
-  - codemirror.mjs was created from concatenating `lib/codemirror.js`, `mode/css/css.js`, and `mode/xml/xml.js`, with modifications to remove classic script wrappers and add stubs for `window` and `document` objects.
+  - codemirror.trimmed.mjs: Codemirror version 5.61.0, as per [README.chromium](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/third_party/codemirror/README.chromium).
+  - codemirror.trimmed.mjs was created from concatenating `lib/codemirror.js`, `mode/css/css.js`, and `mode/xml/xml.js`, only keeping the parts of the code used by the formatters.
 - [JavaScriptFormatter.ts](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/JavaScriptFormatter.ts)
 - [platform.ts](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/core/platform/platform.ts): A thinned-down version only importing and re-exporting `ArrayUtilities` and `StringUtilities`.
 - [StringUtilities.ts](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/core/platform/StringUtilities.ts)

@@ -2,11 +2,11 @@
     "type": "module",
     "devDependencies": {
         "chai": "^6.2.2",
-        "mocha": "^11.7.6"
+        "mocha": "^11.7.6",
+        "terser": "^5.48.0"
     },
     "scripts": {
-        "build": "bun build src/main.js --outdir dist --minify",
-        "build:dev": "bun build src/main.js --outdir dist",
+        "build": "bun build src/main.js --outdir dist && terser dist/main.js --compress --mangle --output dist/main.min.js",
         "test": "NODE_OPTIONS='--experimental-transform-types' mocha \"tests/**/*.js\""
     }
 }

@@ -4,7 +4,7 @@
 
 import * as Platform from './platform.ts';
 import {CSSFormatter} from './CSSFormatter.ts';
-import * as CodeMirror from './codemirror.mjs';
+import * as CodeMirror from './codemirror.trimmed.mjs';
 import {FormattedContentBuilder} from './FormattedContentBuilder.ts';
 import {type FormatResult, FormattableMediaTypes} from './FormatterActions.ts';
 import {HTMLFormatter} from './HTMLFormatter.ts';

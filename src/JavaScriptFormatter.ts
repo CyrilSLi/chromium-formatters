@@ -346,7 +346,7 @@ export class JavaScriptFormatter {
         return 'ts';
       }
       if (AT.punctuator(token, '}')) {
-        if (node.attributes.length > 0) {
+        if (node.attributes?.length > 0) {
           return 't';
         }
         return node.source ? 'ts' : 't';
