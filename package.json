@@ -1,0 +1,12 @@
+{
+    "type": "module",
+    "devDependencies": {
+        "chai": "^6.2.2",
+        "mocha": "^11.7.6"
+    },
+    "scripts": {
+        "build": "bun build src/main.js --outdir dist --minify",
+        "build:dev": "bun build src/main.js --outdir dist",
+        "test": "NODE_OPTIONS='--experimental-transform-types' mocha \"tests/**/*.js\""
+    }
+}
