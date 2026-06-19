@@ -40,10 +40,7 @@
   // src/main.esm.js
   var exports_main_esm = {};
   __export(exports_main_esm, {
-    chromiumFormatJavaScript: () => chromiumFormatJavaScript,
-    chromiumFormatJSON: () => chromiumFormatJSON,
-    chromiumFormatHTML: () => chromiumFormatHTML,
-    chromiumFormatCSS: () => chromiumFormatCSS
+    default: () => main_esm_default
   });
 
   // src/ArrayUtilities.ts
@@ -756,6 +753,95 @@
     const lhsToDecode = lhs.substring(lhs.length - 4);
     return lhsLeaveAsIs + globalThis.btoa(globalThis.atob(lhsToDecode) + globalThis.atob(rhs));
   };
+
+  // src/CSSFormatter.ts
+  var cssTrimEnd = (tokenValue) => {
+    const re = /(?:\r?\n|[\t\f\r ])+$/g;
+    return tokenValue.replace(re, "");
+  };
+
+  class CSSFormatter {
+    #builder;
+    #toOffset;
+    #fromOffset;
+    #lineEndings;
+    #lastLine = -1;
+    #state = {};
+    constructor(builder) {
+      this.#builder = builder;
+    }
+    format(text, lineEndings, fromOffset, toOffset) {
+      this.#lineEndings = lineEndings;
+      this.#fromOffset = fromOffset;
+      this.#toOffset = toOffset;
+      this.#state = {};
+      this.#lastLine = -1;
+      const tokenize = createTokenizer("text/css");
+      const oldEnforce = this.#builder.setEnforceSpaceBetweenWords(false);
+      tokenize(text.substring(this.#fromOffset, this.#toOffset), this.#tokenCallback.bind(this));
+      this.#builder.setEnforceSpaceBetweenWords(oldEnforce);
+    }
+    #tokenCallback(token, type, startPosition) {
+      startPosition += this.#fromOffset;
+      const startLine = exports_ArrayUtilities.lowerBound(this.#lineEndings, startPosition, exports_ArrayUtilities.DEFAULT_COMPARATOR);
+      if (startLine !== this.#lastLine) {
+        this.#state.eatWhitespace = true;
+      }
+      if (type && (/^property/.test(type) || /^variable-2/.test(type)) && !this.#state.inPropertyValue) {
+        this.#state.seenProperty = true;
+      }
+      this.#lastLine = startLine;
+      const isWhitespace2 = /^(?:\r?\n|[\t\f\r ])+$/.test(token);
+      if (isWhitespace2) {
+        if (!this.#state.eatWhitespace) {
+          this.#builder.addSoftSpace();
+        }
+        return;
+      }
+      this.#state.eatWhitespace = false;
+      if (token === `
+`) {
+        return;
+      }
+      if (token !== "}") {
+        if (this.#state.afterClosingBrace) {
+          this.#builder.addNewLine(true);
+        }
+        this.#state.afterClosingBrace = false;
+      }
+      if (token === "}") {
+        if (this.#state.inPropertyValue) {
+          this.#builder.addNewLine();
+        }
+        this.#builder.decreaseNestingLevel();
+        this.#state.afterClosingBrace = true;
+        this.#state.inPropertyValue = false;
+      } else if (token === ":" && !this.#state.inPropertyValue && this.#state.seenProperty) {
+        this.#builder.addToken(token, startPosition);
+        this.#builder.addSoftSpace();
+        this.#state.eatWhitespace = true;
+        this.#state.inPropertyValue = true;
+        this.#state.seenProperty = false;
+        return;
+      } else if (token === "{") {
+        this.#builder.addSoftSpace();
+        this.#builder.addToken(token, startPosition);
+        this.#builder.addNewLine();
+        this.#builder.increaseNestingLevel();
+        return;
+      }
+      this.#builder.addToken(cssTrimEnd(token), startPosition);
+      if (type === "comment" && !this.#state.inPropertyValue && !this.#state.seenProperty) {
+        this.#builder.addNewLine();
+      }
+      if (token === ";" && this.#state.inPropertyValue) {
+        this.#state.inPropertyValue = false;
+        this.#builder.addNewLine();
+      } else if (token === "}") {
+        this.#builder.addNewLine();
+      }
+    }
+  }
 
   // src/codemirror.trimmed.mjs
   var helpers = {};
@@ -10701,6 +10787,18 @@ Defaulting to 2020, but this will stop working in the future.`);
     }
   }
 
+  // src/IdentityFormatter.ts
+  class IdentityFormatter {
+    builder;
+    constructor(builder) {
+      this.builder = builder;
+    }
+    format(text, _lineEndings, fromOffset, toOffset) {
+      const content = text.substring(fromOffset, toOffset);
+      this.builder.addToken(content, fromOffset);
+    }
+  }
+
   // src/ScopeParser.ts
   class Scope3 {
     variables = new Map;
@@ -11226,109 +11324,56 @@ Defaulting to 2020, but this will stop working in the future.`);
     };
   }
   var AbortTokenization = {};
-
-  // src/CSSFormatter.ts
-  var cssTrimEnd = (tokenValue) => {
-    const re = /(?:\r?\n|[\t\f\r ])+$/g;
-    return tokenValue.replace(re, "");
-  };
-
-  class CSSFormatter {
-    #builder;
-    #toOffset;
-    #fromOffset;
-    #lineEndings;
-    #lastLine = -1;
-    #state = {};
-    constructor(builder) {
-      this.#builder = builder;
-    }
-    format(text, lineEndings, fromOffset, toOffset) {
-      this.#lineEndings = lineEndings;
-      this.#fromOffset = fromOffset;
-      this.#toOffset = toOffset;
-      this.#state = {};
-      this.#lastLine = -1;
-      const tokenize = createTokenizer("text/css");
-      const oldEnforce = this.#builder.setEnforceSpaceBetweenWords(false);
-      tokenize(text.substring(this.#fromOffset, this.#toOffset), this.#tokenCallback.bind(this));
-      this.#builder.setEnforceSpaceBetweenWords(oldEnforce);
-    }
-    #tokenCallback(token, type, startPosition) {
-      startPosition += this.#fromOffset;
-      const startLine = exports_ArrayUtilities.lowerBound(this.#lineEndings, startPosition, exports_ArrayUtilities.DEFAULT_COMPARATOR);
-      if (startLine !== this.#lastLine) {
-        this.#state.eatWhitespace = true;
-      }
-      if (type && (/^property/.test(type) || /^variable-2/.test(type)) && !this.#state.inPropertyValue) {
-        this.#state.seenProperty = true;
-      }
-      this.#lastLine = startLine;
-      const isWhitespace2 = /^(?:\r?\n|[\t\f\r ])+$/.test(token);
-      if (isWhitespace2) {
-        if (!this.#state.eatWhitespace) {
-          this.#builder.addSoftSpace();
+  function format(mimeType, text, indentString) {
+    indentString = indentString || "    ";
+    let result;
+    const builder = new FormattedContentBuilder(indentString);
+    const lineEndings = exports_StringUtilities.findLineEndingIndexes(text);
+    try {
+      switch (mimeType) {
+        case "text/html" /* TEXT_HTML */: {
+          const formatter = new HTMLFormatter(builder);
+          formatter.format(text, lineEndings);
+          break;
         }
-        return;
-      }
-      this.#state.eatWhitespace = false;
-      if (token === `
-`) {
-        return;
-      }
-      if (token !== "}") {
-        if (this.#state.afterClosingBrace) {
-          this.#builder.addNewLine(true);
+        case "text/css" /* TEXT_CSS */: {
+          const formatter = new CSSFormatter(builder);
+          formatter.format(text, lineEndings, 0, text.length);
+          break;
         }
-        this.#state.afterClosingBrace = false;
-      }
-      if (token === "}") {
-        if (this.#state.inPropertyValue) {
-          this.#builder.addNewLine();
+        case "application/javascript" /* APPLICATION_JAVASCRIPT */:
+        case "text/javascript" /* TEXT_JAVASCRIPT */: {
+          const formatter = new JavaScriptFormatter(builder);
+          formatter.format(text, lineEndings, 0, text.length);
+          break;
         }
-        this.#builder.decreaseNestingLevel();
-        this.#state.afterClosingBrace = true;
-        this.#state.inPropertyValue = false;
-      } else if (token === ":" && !this.#state.inPropertyValue && this.#state.seenProperty) {
-        this.#builder.addToken(token, startPosition);
-        this.#builder.addSoftSpace();
-        this.#state.eatWhitespace = true;
-        this.#state.inPropertyValue = true;
-        this.#state.seenProperty = false;
-        return;
-      } else if (token === "{") {
-        this.#builder.addSoftSpace();
-        this.#builder.addToken(token, startPosition);
-        this.#builder.addNewLine();
-        this.#builder.increaseNestingLevel();
-        return;
+        case "application/json" /* APPLICATION_JSON */:
+        case "application/manifest+json" /* APPLICATION_MANIFEST_JSON */: {
+          const formatter = new JSONFormatter(builder);
+          formatter.format(text, lineEndings, 0, text.length);
+          break;
+        }
+        default: {
+          const formatter = new IdentityFormatter(builder);
+          formatter.format(text, lineEndings, 0, text.length);
+        }
       }
-      this.#builder.addToken(cssTrimEnd(token), startPosition);
-      if (type === "comment" && !this.#state.inPropertyValue && !this.#state.seenProperty) {
-        this.#builder.addNewLine();
-      }
-      if (token === ";" && this.#state.inPropertyValue) {
-        this.#state.inPropertyValue = false;
-        this.#builder.addNewLine();
-      } else if (token === "}") {
-        this.#builder.addNewLine();
-      }
+      result = {
+        mapping: builder.mapping,
+        content: builder.content()
+      };
+    } catch (e) {
+      console.error(e);
+      result = {
+        mapping: { original: [0], formatted: [0] },
+        content: text
+      };
     }
+    return result;
   }
 
   // src/main.esm.js
-  function chromiumFormatFactory(formatterClass) {
-    return (source, indentString = "    ") => {
-      const builder = new FormattedContentBuilder(indentString);
-      const formatter = new formatterClass(builder);
-      formatter.format(source, []);
-      return builder.content();
-    };
-  }
-  var chromiumFormatCSS = chromiumFormatFactory(CSSFormatter);
-  var chromiumFormatHTML = chromiumFormatFactory(HTMLFormatter);
-  var chromiumFormatJavaScript = chromiumFormatFactory(JavaScriptFormatter);
-  var chromiumFormatJSON = chromiumFormatFactory(JSONFormatter);
+  var main_esm_default = format;
 
   // src/umd-shim.js
   // UMD shim. This file is injected into the IIFE bundle, replacing its IIFE closing parenthesis line.
@@ -11343,12 +11388,7 @@ Defaulting to 2020, but this will stop working in the future.`);
       module.exports = factory();
     } else {
       // Browser globals (root is window)
-      Object.assign(root, factory());
+      root.chromiumFormatter = factory();
     }
-  })(typeof self !== 'undefined' ? self : this, () => ({
-    chromiumFormatCSS,
-    chromiumFormatHTML,
-    chromiumFormatJavaScript,
-    chromiumFormatJSON
-  }));
+  })(typeof self !== 'undefined' ? self : this, () => format);
 })();

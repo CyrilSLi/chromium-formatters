@@ -12,12 +12,7 @@
       module.exports = factory();
     } else {
       // Browser globals (root is window)
-      Object.assign(root, factory());
+      root.chromiumFormatter = factory();
     }
-  })(typeof self !== 'undefined' ? self : this, () => ({
-    chromiumFormatCSS,
-    chromiumFormatHTML,
-    chromiumFormatJavaScript,
-    chromiumFormatJSON
-  }));
+  })(typeof self !== 'undefined' ? self : this, () => format);
 })();

@@ -4,10 +4,10 @@
 
 import {assert} from 'chai';
 
-import { chromiumFormatCSS } from '../dist/main.esm.js';
+import chromiumFormatter from '../dist/main.esm.js';
 
 function formatCSS(text) {
-  return chromiumFormatCSS(text, '  ');
+  return chromiumFormatter('text/css', text, '  ').content;
 }
 
 describe('CSSFormatter', () => {

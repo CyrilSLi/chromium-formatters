@@ -4,10 +4,10 @@
 
 import {assert} from 'chai';
 
-import { chromiumFormatJSON } from '../dist/main.esm.js';
+import chromiumFormatter from '../dist/main.esm.js';
 
 function formatJSON(text) {
-  return chromiumFormatJSON(text, '  ');
+  return chromiumFormatter('application/json', text, '  ').content;
 }
 
 describe('JSONFormatter', () => {

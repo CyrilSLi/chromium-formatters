@@ -18,6 +18,7 @@ All files had their `import` paths and the test format function modified to refe
 
 - [CSSFormatter.js](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/CSSFormatter.test.ts)
 - [FormattedContentBuilder.js](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/FormattedContentBuilder.test.ts)
+- [FormatterWorker.js](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/FormatterWorker.test.ts)
 - [HTMLFormatter.js](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/HTMLFormatter.test.ts)
 - [JavaScriptFormatter.js](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/JavaScriptFormatter.test.ts)
 - [JSONFormatter.js](https://source.chromium.org/chromium/chromium/src/+/main:third_party/devtools-frontend/src/front_end/entrypoints/formatter_worker/JSONFormatter.test.ts)

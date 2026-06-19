@@ -21,8 +21,6 @@
             margin: 4px;
         }
         #language-select {
-            position: relative;
-            top: -4px;
             padding: 4px 8px;
             border: 1px solid black;
         }
@@ -37,8 +35,14 @@
         }
         h1 {
             font-family: Arial, sans-serif;
-            font-size: 32px;
+            font-size: 24px;
+            position: relative;
+            top: 2px;
             font-weight: bold;
+        }
+        a {
+            color: blue;
+            text-decoration: underline;
         }
         #app {
             height: 100vh;
@@ -59,16 +63,16 @@
 <body>
     <div id="app">
         <div id="header">
-            <h1>chromium-formatters Demo</h1>
+            <h1><a href="https://github.com/CyrilSLi/chromium-formatters" target="_blank">chromium-formatters</a> Demo</h1>
             <fieldset id="language-select">
                 <legend>Language:</legend>
-                <input type="radio" id="css" name="language" value="CSS">
+                <input type="radio" id="css" name="language" value="text/css">
                 <label for="css">CSS</label>
-                <input type="radio" id="html" name="language" value="HTML">
+                <input type="radio" id="html" name="language" value="text/html">
                 <label for="html">HTML</label>
-                <input type="radio" id="javascript" name="language" value="JavaScript" checked>
+                <input type="radio" id="javascript" name="language" value="text/javascript" checked>
                 <label for="javascript">JS</label>
-                <input type="radio" id="json" name="language" value="JSON">
+                <input type="radio" id="json" name="language" value="application/json">
                 <label for="json">JSON</label>
             </fieldset>
         </div>
@@ -83,43 +87,143 @@
             showPrintMargin: false,
             showGutter: true,
             highlightActiveLine: false,
-            theme: "ace/theme/chrome"
+            theme: "ace/theme/chrome",
+            useWorker: false,
+            foldStyle: "manual",
+            showFoldWidgets: false
         };
+        const searchOptions = {
+            highlight: false
+        }
+        function disableSearchHighlight(editor) {
+            editor.commands.on("afterExec", (ev) => {
+                if (ev.command.name === "find") {
+                    const disableHighlight = setInterval(() => {
+                        if (editor?.searchBox?.highlight) {
+                            editor.searchBox.highlight = () => {};
+                            clearInterval(disableHighlight);
+                        }
+                    }, 10);
+                }
+            })
+        }
 
-        const original = ace.edit("original");
-        original.setOptions({
+        const originalEditor = ace.edit("original");
+        originalEditor.setOptions({
             ...editorOptions,
             placeholder: "Type or paste unformatted code here.",
             wrap: true
         });
+        disableSearchHighlight(originalEditor);
 
-        const formatted = ace.edit("formatted");
-        formatted.setOptions({
+        const formattedEditor = ace.edit("formatted");
+        formattedEditor.setOptions({
             ...editorOptions,
             placeholder: "The formatted output or any error messages will appear here.",
             readOnly: true,
             wrap: false
         });
+        disableSearchHighlight(formattedEditor);
+        window.formattedEditor = formattedEditor;
+
+        let formattedMapping = {};
+        formattedEditor.session.gutterRenderer = {
+            getWidth: (session, lastLineText, config) => {
+                const lineNums = formattedMapping.lineNums;
+                if (lineNums === undefined) {
+                    return String(session.getLength()).length * config.characterWidth;
+                }
+                return String(lineNums[lineNums.length - 1]).length * config.characterWidth
+            },
+            getText: (session, row) => {
+                const lineNums = formattedMapping.lineNums;
+                if (lineNums === undefined) {
+                    return String(row + 1);
+                }
+                if (lineNums[row] === undefined) {
+                    calculateLineNum(row);
+                }
+                if (row > 0 && lineNums[row - 1] === undefined) {
+                    calculateLineNum(row - 1);
+                }
+                return lineNums[row] === lineNums[row - 1] ? "-" : String(lineNums[row]);
+            }
+        };
 
         function setLanguage() {
-            const language = document.querySelector('input[name="language"]:checked').value.toLowerCase();
-            original.session.setMode(`ace/mode/${language}`);
-            formatted.session.setMode(`ace/mode/${language}`);
+            const language = document.querySelector('input[name="language"]:checked').value.split("/").pop();
+            originalEditor.session.setMode(`ace/mode/${language}`);
+            formattedEditor.session.setMode(`ace/mode/${language}`);
             formatCode();
         }
         document.getElementById("language-select").addEventListener("change", setLanguage);
         setLanguage();
 
-        function formatCode() {
-            const language = document.querySelector('input[name="language"]:checked').value;
-            formatted.session.setValue("Formatting...");
-            try {
-                formatted.session.setValue(window[`chromiumFormat${language}`](original.getValue()));
-            } catch (error) {
-                formatted.session.setValue(`Error: ${error.stack || error.message || error}`);
+        function findLastMapping(array, target) {
+            let low = 0, high = array.length - 1, result = -1;
+            while (low <= high) {
+                const mid = Math.floor((low + high) / 2);
+                if (array[mid] <= target) {
+                    result = mid;
+                    low = mid + 1;
+                } else {
+                    high = mid - 1;
+                }
             }
+            return result;
         }
-        original.on("change", formatCode);
+        function calculateLineNum(line) {
+            const { original, formatted, lineNums, rowToIndices } = formattedMapping;
+            const charIndex = formattedEditor.session.doc.positionToIndex({ row: line, column: 0 });
+            const lastMapping = findLastMapping(formatted, charIndex);
+            const origCharIndex = charIndex - (formatted[lastMapping] - original[lastMapping]);
+            rowToIndices[line] = origCharIndex;
+            lineNums[line] = originalEditor.session.doc.indexToPosition(origCharIndex).row + 1;
+        }
+
+        function scrollToOrigIndex(ev) {
+            const rowToIndices = formattedMapping.rowToIndices;
+            if (rowToIndices === undefined) {
+                return;
+            }
+            const origIndex = rowToIndices[formattedEditor.getCursorPosition().row];
+            const origPos = originalEditor.session.doc.indexToPosition(origIndex);
+            originalEditor.clearSelection();
+            originalEditor.moveCursorTo(origPos.row, origPos.column);
+            originalEditor.renderer.scrollTo(0, -Infinity);
+            originalEditor.renderer.scrollCursorIntoView(origPos, 0.5);
+        }
+        formattedEditor.selection.on("changeCursor", scrollToOrigIndex);
+
+        function formatCode() {
+            formattedEditor.session.setValue("Formatting...");
+            originalEditor.resize(true);
+            formattedEditor.resize(true);
+            setTimeout(() => {
+                const language = document.querySelector('input[name="language"]:checked').value;
+                const { mapping, content } = chromiumFormatter(language, originalEditor.getValue());
+                formattedEditor.session.setValue(content);
+
+                const lineNums = [];
+                let lastMapping = 0;
+                const { original, formatted } = mapping;
+                const numRows = formattedEditor.session.getLength(), lastMappingIndex = mapping.formatted.length - 1;
+                formattedMapping = {
+                    ...mapping,
+                    lineNums: [],
+                    rowToIndices: []
+                };
+            }, 0);
+        }
+        originalEditor.on("change", formatCode);
+    </script>
+    <script>
+
+
+        1
+        +
+
+        1
     </script>
 </body>
 </html>
