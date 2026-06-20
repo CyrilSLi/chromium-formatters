@@ -90,7 +90,9 @@
             theme: "ace/theme/chrome",
             useWorker: false,
             foldStyle: "manual",
-            showFoldWidgets: false
+            showFoldWidgets: false,
+            behavioursEnabled: false,
+            enableAutoIndent: false
         };
         const searchOptions = {
             highlight: false
@@ -181,7 +183,18 @@
             lineNums[line] = originalEditor.session.doc.indexToPosition(origCharIndex).row + 1;
         }
 
+        let formattedEditorFocus = false;
+        formattedEditor.on("focus", () => {
+            formattedEditorFocus = true;
+        });
+        formattedEditor.on("blur", () => {
+            formattedEditorFocus = false;
+        });
+
         function scrollToOrigIndex(ev) {
+            if (!formattedEditorFocus) {
+                return;
+            }
             const rowToIndices = formattedMapping.rowToIndices;
             if (rowToIndices === undefined) {
                 return;
@@ -216,14 +229,6 @@
             }, 0);
         }
         originalEditor.on("change", formatCode);
-    </script>
-    <script>
-
-
-        1
-        +
-
-        1
     </script>
 </body>
 </html>
