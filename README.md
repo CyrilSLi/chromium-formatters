@@ -1,4 +1,4 @@
-# chromium-format-javascript
+# chromium-formatters
 
 The same formatters used by Chrom(ium) DevTools' "Pretty Print" feature, extracted into a standalone module for use outside of it. The supported languages are CSS, HTML, JavaScript, and JSON.
 
