@@ -2,6 +2,8 @@
 
 The same formatters used by Chrom(ium) DevTools' "Pretty Print" feature, extracted into a standalone module for use outside of it. The supported languages are CSS, HTML, JavaScript, and JSON.
 
+[npm](https://www.npmjs.com/package/chromium-formatters)&nbsp;&nbsp;&nbsp;[jsDelivr](https://www.jsdelivr.com/package/npm/chromium-formatters)
+
 ## Installation
 
 This library has no external dependencies and has both ESM and UMD builds.
