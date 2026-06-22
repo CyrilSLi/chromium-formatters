@@ -25,7 +25,7 @@ const { content } = chromiumFormatter('text/javascript', input, '  ');
 ### UMD (e.g. AMD, CJS, or browser `<script>` tag without `type="module"`):
 
 ```html
-<script src="dist/main.cjs"></script>
+<script src="dist/main.js"></script>
 <script>
     const { content } = chromiumFormatter("text/javascript", input);
 </script>
@@ -33,7 +33,7 @@ const { content } = chromiumFormatter('text/javascript', input, '  ');
 
 ```js
 // CommonJS
-const chromiumFormatter = require('../dist/main.cjs');
+const chromiumFormatter = require('../dist/main.js');
 const { content } = chromiumFormatter("text/javascript", input);
 ```
 

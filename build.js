@@ -7,6 +7,13 @@ function logFileSize(filePath) {
 
 
 
+console.log("Cleaning dist/ directory...");
+if (fs.existsSync("dist")) {
+    fs.rmSync("dist", { recursive: true });
+}
+
+
+
 console.log("Building ESM module...");
 await Bun.build({
     entrypoints: ["src/main.esm.js"],
@@ -33,26 +40,26 @@ console.log("Building UMD module...");
 await Bun.build({
     entrypoints: ["src/main.esm.js"],
     outdir: "dist",
-    naming: "main.cjs",
+    naming: "main.js",
     format: "iife",
     target: "browser"
 });
 
 console.log("Injecting UMD shim...");
-let umdCode = fs.readFileSync("dist/main.cjs", "utf-8");
+let umdCode = fs.readFileSync("dist/main.js", "utf-8");
 const umdShim = fs.readFileSync("src/umd-shim.js", "utf-8");
 umdCode = umdCode.replace("})();", umdShim);
-fs.writeFileSync("dist/main.cjs", umdCode, "utf-8");
-logFileSize("dist/main.cjs");
+fs.writeFileSync("dist/main.js", umdCode, "utf-8");
+logFileSize("dist/main.js");
 
 
 
 console.log("Minifying UMD module...");
-fs.writeFileSync("dist/main.min.cjs", (await minify(umdCode, {
+fs.writeFileSync("dist/main.min.js", (await minify(umdCode, {
     compress: true,
     mangle: true,
 })).code, "utf-8");
-logFileSize("dist/main.min.cjs");
+logFileSize("dist/main.min.js");
 
 
 
