@@ -1,6 +1,6 @@
 {
     "name": "chromium-formatters",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "The same formatters used by Chrom(ium) DevTools' \"Pretty Print\" feature, extracted into a standalone module for use outside of it",
     "keywords": [
         "chromium",
